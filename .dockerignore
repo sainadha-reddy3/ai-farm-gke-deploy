@@ -1,0 +1,22 @@
+.git
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+.vscode
+.idea
+.venv/
+venv/
+.env
+.env.*
+
+# build/output clutter
+dist/
+build/
+node_modules/
+
+# large media (keeps image small) — uncomment if NOT needed in the container
+# *.mp4
+# *.mov
+# *.avi

@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+  namespace: myapp
+  labels:
+    app: myapp
+    tier: web
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0        # zero-downtime: never reduce below desired replicas
+      maxSurge: 1              # add one extra pod during update
+  selector:
+    matchLabels:
+      app: myapp
+      tier: web
+  template:
+    metadata:
+      labels:
+        app: myapp
+        tier: web
+    spec:
+      serviceAccountName: myapp-sa
+      containers:
+        - name: myapp
+          image: asia-south1-docker.pkg.dev/docker-gke-project-sainadha/apps/myapp:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DEPLOY_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: myapp-config
+                  key: DEPLOY_ENV
+          # Autopilot requires requests; set sane limits
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          # Probes ensure traffic goes only to healthy pods (zero-downtime)
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3

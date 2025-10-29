@@ -1,0 +1,68 @@
+name: Build, Push & Deploy to GKE
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  PROJECT_ID: docker-gke-project-sainadha
+  GAR_REGION: asia-south1
+  GAR_REPO: apps
+  IMAGE_NAME: myapp
+  CLUSTER_NAME: myapp-auto
+  CLUSTER_REGION: us-central1
+  NAMESPACE: myapp
+  DEPLOYMENT: myapp
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Auth to Google Cloud (OIDC)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/391120584695/locations/global/workloadIdentityPools/github-pool/providers/github-actions"
+          service_account: "ci-deployer@docker-gke-project-sainadha.iam.gserviceaccount.com"
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker "${{ env.GAR_REGION }}-docker.pkg.dev" --quiet
+
+      - name: Build & Push Image
+        run: |
+          SHORT_SHA=${GITHUB_SHA::7}
+          IMAGE_URI="${{ env.GAR_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.IMAGE_NAME }}:${SHORT_SHA}"
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+          docker build -t "$IMAGE_URI" .
+          docker push "$IMAGE_URI"
+
+      - name: Get GKE credentials
+        run: gcloud container clusters get-credentials "${{ env.CLUSTER_NAME }}" --region "${{ env.CLUSTER_REGION }}"
+
+      - name: Apply base manifests
+        run: |
+          kubectl apply -f K8/namespace.yaml
+          kubectl apply -f K8/serviceaccount.yaml
+          kubectl apply -f K8/configmap.yaml
+          kubectl apply -f K8/service.yaml
+
+      - name: Set image on Deployment
+        run: |
+          kubectl -n "${{ env.NAMESPACE }}" set image deployment/${{ env.DEPLOYMENT }} \
+            ${{ env.IMAGE_NAME }}="$IMAGE_URI"
+          kubectl -n "${{ env.NAMESPACE }}" rollout status deployment/${{ env.DEPLOYMENT }}
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          kubectl -n "${{ env.NAMESPACE }}" rollout undo deployment/${{ env.DEPLOYMENT }}

@@ -1,0 +1,10 @@
+streamlit
+pandas
+numpy
+matplotlib
+seaborn
+shapely
+geopy
+folium
+streamlit-folium
+opencv-python-headless
