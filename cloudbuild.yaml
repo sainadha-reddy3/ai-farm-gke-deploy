@@ -1,0 +1,53 @@
+# cloudbuild.yaml — build → push → deploy to GKE
+
+substitutions:
+  _REGION: "asia-south1"
+  _AR_REPO: "apps"
+  _IMAGE_NAME: "ai-farm-image"
+  _CLUSTER: "ai-farm-cluster"
+  _CLUSTER_LOCATION: "asia-south1"
+  _NAMESPACE: "default"
+  _DEPLOYMENT: "ai-farm-deployment"
+  _CONTAINER: "ai-farm-container"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  # 1) Build Docker image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:$SHORT_SHA",
+        ".",
+      ]
+
+  # 2) Push image to Artifact Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      ["push", "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:$SHORT_SHA"]
+
+  # 3) Fetch GKE credentials so kubectl can talk to the cluster
+  - name: "gcr.io/cloud-builders/gcloud"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        gcloud container clusters get-credentials "${_CLUSTER}" \
+          --region "${_CLUSTER_LOCATION}" \
+          --project "$PROJECT_ID"
+
+  # 4) Rolling update: set the new image on your Deployment
+  - name: "gcr.io/cloud-builders/kubectl"
+    args:
+      [
+        "set","image",
+        "deployment/${_DEPLOYMENT}",
+        "${_CONTAINER}=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:$SHORT_SHA",
+        "-n","${_NAMESPACE}"
+      ]
+
+images:
+  - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:$SHORT_SHA"
