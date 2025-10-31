@@ -1,121 +1,127 @@
-🌾 AI-Based Farm Management System – FARM_ERA
+🌾 AI-Based Farm Management System — FARM_ERA
 🚀 Overview
 
-FARM_ERA is an AI-powered farm management system designed to help farmers optimize productivity, sustainability, and resource efficiency using data-driven insights.
-It integrates AI, GIS mapping, IoT sensors, and predictive analytics into one unified platform — built with Python, Streamlit, and OpenCV — providing actionable recommendations and real-time monitoring for modern precision agriculture.
+FARM_ERA is an AI-powered farm management and automation platform designed to help farmers optimize productivity, sustainability, and resource efficiency through data-driven insights.
+It integrates AI, GIS mapping, IoT simulations, and predictive analytics into a unified system — built using Python, Streamlit, OpenCV, and Docker — and deployed seamlessly on Google Kubernetes Engine (GKE) via Google Cloud Build (CI/CD).
 
 🧠 Project Aim
 
-To develop an intelligent, data-driven system that:
+To build an intelligent and automated decision-support system that:
 
-Monitors real-time farm conditions using sensors and IoT.
+Monitors real-time farm conditions using simulated IoT sensors.
 
-Provides predictive analytics for crop planning, yield forecasting, and irrigation scheduling.
+Provides predictive analytics for crop yield forecasting, pest detection, and irrigation scheduling.
 
-Offers GIS-based field mapping and visual dashboards for easy decision-making.
+Offers GIS-based mapping and analytics dashboards for smart resource management.
 
-Enhances sustainability by optimizing water, fertilizer, and pesticide use.
+Enhances sustainability by optimizing water, fertilizer, and pesticide usage.
 
 🏗️ System Architecture
 
-The architecture of the AI-Based Farm Management System includes:
+The system follows a modular microservice-based architecture, deployed using Docker containers and orchestrated on GKE.
 
-Data Acquisition Layer
-
-Collects data from IoT sensors, satellite imagery, and weather APIs.
-
-Captures soil moisture, temperature, humidity, and rainfall data.
-
-AI & Analytics Layer
-
-Uses machine learning and predictive analytics for crop yield estimation, pest detection, and irrigation optimization.
-
-Optimization & Decision Layer
-
-Generates smart irrigation schedules and crop management recommendations.
-
-Detects anomalies in environmental data for proactive farm management.
-
-Visualization & Interaction Layer
-
-Interactive Streamlit dashboards.
-
-Real-time OpenCV camera feed for irrigation system monitoring.
-
-GeoJSON-based mapping using Folium.
-
-🧩 Features
+Layer	Description
+Data Acquisition Layer	Simulates IoT sensor data (soil moisture, temperature, rainfall) and integrates external weather APIs.
+AI & Analytics Layer	Uses ML models for yield prediction, irrigation optimization, and anomaly detection.
+Optimization & Decision Layer	Automates irrigation control and generates smart crop management recommendations.
+Visualization Layer	Provides interactive dashboards (Streamlit), GIS maps (Folium), and real-time video feeds (OpenCV).
+🧩 Key Features
 Module	Description
-🏡 Home Dashboard	Central hub with project introduction and module navigation
-🗺️ Field Mapping	Upload or draw GeoJSON polygons to calculate area and boundary distances using GIS
-🌱 Crop Planning	Input data to simulate yield predictions, visualize rainfall data, and manage crop cycles
-📊 Crop History	Record fertilizers, pesticides, and water usage, and view input trends via graphs
-🐛 Pest & Disease Management	Log pest and disease data, simulate effectiveness of control options, and visualize conditions
-☁️ Weather Tracking	Generate and visualize weather data (temperature, humidity, rainfall trends, and correlation heatmaps)
-💧 Irrigation Management	Automate irrigation monitoring using simulated sensor data and OpenCV video feed (cam.py, irrigator.py)
+🏡 Home Dashboard	Centralized hub with quick navigation to all modules.
+🗺️ Field Mapping	Upload or draw GeoJSON polygons to calculate field area and boundary distances.
+🌱 Crop Planning	Input soil and crop data to simulate yield predictions and visualize rainfall impact.
+📊 Crop History	Log fertilizer, pesticide, and water usage; view historical trends with graphs.
+🐛 Pest & Disease Management	Record pest/disease data, predict risks, and simulate control strategies.
+☁️ Weather Tracking	Visualize weather patterns (temperature, humidity, rainfall trends, correlations).
+💧 Irrigation Management	Automate irrigation monitoring using simulated sensor data and OpenCV-based live feeds.
 🧰 Tools & Technologies
-Category	Tools
+Category	Tools Used
 Programming Language	Python
 Frameworks	Streamlit, Folium, OpenCV
 AI/ML Libraries	TensorFlow, scikit-learn, NumPy, Pandas
 Visualization	Matplotlib, Seaborn
 GIS Tools	GeoJSON, Shapely, Geopy
-Other Tools	Docker, CSV/JSON for data storage
+DevOps & Cloud	Docker, Kubernetes (GKE), Google Cloud Build (CI/CD), Artifact Registry
+Version Control	GitHub
+⚙️ Deployment & Setup
+🐳 Local Setup (Development)
+# 1️⃣ Clone the repository
+git clone https://github.com/sainadha-reddy3/ai-farm-gke-deploy.git
+cd ai-farm-gke-deploy
 
-⚙️ Installation & Setup
-1️⃣ Clone the repository
-git clone https://github.com/<your-username>/AI-Farm-Management.git
-cd AI-Farm-Management
-
-2️⃣ Create a virtual environment
+# 2️⃣ Create a virtual environment
 python -m venv venv
-source venv/bin/activate   # On Mac/Linux
-venv\Scripts\activate      # On Windows
+source venv/bin/activate   # Mac/Linux
+venv\Scripts\activate      # Windows
 
-3️⃣ Install dependencies
+# 3️⃣ Install dependencies
 pip install -r requirements.txt
-
 pip install streamlit folium shapely geopy opencv-python pandas matplotlib seaborn numpy
 
-4️⃣ Run the application
+# 4️⃣ Run the application locally
 streamlit run app.py
+
+☁️ Cloud Deployment (CI/CD via Cloud Build)
+
+The project is containerized using Docker.
+
+Google Cloud Build automatically builds and pushes Docker images to Artifact Registry.
+
+Each push to GitHub triggers deployment on Google Kubernetes Engine (GKE) via the cloudbuild.yaml pipeline.
+
+CI/CD Flow:
+GitHub → Cloud Build → Artifact Registry → GKE Cluster
+
+
+This ensures:
+
+Automated build and deploy pipeline
+
+Version-controlled container images
+
+Zero-downtime rollouts on each commit
 
 🧪 How It Works
 
-Users input farm coordinates or upload GeoJSON files.
-→ The system visualizes and calculates area and boundary distances.
+User Input: Upload GeoJSON maps or enter field coordinates.
 
-Sensor data simulation (irrigator.py).
-→ Generates random soil moisture and water flow data for each irrigation zone.
+Mapping: The system visualizes and calculates field boundaries and areas.
 
-AI-driven decision support.
-→ Predicts yields and irrigation schedules based on input parameters.
+Sensor Simulation: Generates soil moisture and water flow data dynamically (irrigator.py).
 
-Real-time monitoring (cam.py).
-→ Displays camera feed for irrigation system observation.
+AI Analytics: Predicts yield and irrigation schedules using machine learning.
 
-Visualization & Analysis.
-→ Displays heatmaps, bar charts, and trends using Matplotlib & Seaborn.
+Monitoring: Real-time irrigation feed via OpenCV (cam.py).
+
+Visualization: Generates heatmaps and trend charts using Matplotlib & Seaborn.
 
 🧾 Example Use Case
 
-A farmer logs into FARM_ERA, uploads a GeoJSON map of their field, inputs soil data, and starts real-time irrigation monitoring.
-The app analyzes water flow data, visualizes rainfall patterns, predicts yields, and suggests optimal irrigation schedules — all through an intuitive web dashboard.
+A farmer logs into FARM_ERA, uploads a GeoJSON map, enters soil data, and starts real-time irrigation monitoring.
+The system simulates water flow data, visualizes rainfall, predicts yield, and recommends irrigation schedules — all from a secure, web-based dashboard.
 
 🛡️ Data Security
 
-Farm and sensor data are encrypted and locally stored.
+All sensor and field data are stored locally or securely within GCP resources.
 
-Role-based access control can be added for multi-user systems.
+Role-based access control can be enabled for multi-user environments.
 
-No external API calls required — works offline for secure environments.
+No external APIs are required; system can operate offline in secure setups.
 
-🧠 Future Enhancements
+🔮 Future Enhancements
 
-Integrate real IoT sensors (e.g., DHT11, soil moisture probes).
+Integrate real IoT hardware (DHT11, soil moisture sensors).
 
-Deploy TensorFlow models for yield prediction and pest detection.
+Deploy TensorFlow models for advanced yield and pest predictions.
 
-Add cloud-based analytics dashboards (AWS/GCP).
+Add voice-based farm assistant chatbot using local LLMs.
 
-Incorporate voice-based farm assistant chatbot using local LLMs.
+Expand to multi-cloud dashboards (AWS/GCP) for regional farm monitoring.
+
+✅ Current Status:
+
+Application containerized using Docker.
+
+Successfully deployed and tested on Google Kubernetes Engine (GKE).
+
+Integrated with Google Cloud Build for CI/CD automation.
