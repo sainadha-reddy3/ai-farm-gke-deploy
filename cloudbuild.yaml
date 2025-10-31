@@ -1,20 +1,20 @@
 # cloudbuild.yaml — build → push → deploy to GKE
 
 substitutions:
-  _REGION: "asia-south1"
-  _AR_REPO: "apps"
-  _IMAGE_NAME: "ai-farm-image"
-  _CLUSTER: "ai-farm-cluster"
-  _CLUSTER_LOCATION: "asia-south1"
-  _NAMESPACE: "default"
-  _DEPLOYMENT: "ai-farm-deployment"
-  _CONTAINER: "ai-farm-container"
+  _REGION: "asia-south1"              # Artifact Registry region
+  _AR_REPO: "apps"                    # your Artifact Registry repo
+  _IMAGE_NAME: "ai-farm-image"        # Docker image name
+  _CLUSTER: "myapp-auto"              # your actual GKE cluster name
+  _CLUSTER_LOCATION: "us-central1"    # cluster location (REGIONAL)
+  _NAMESPACE: "default"               # Kubernetes namespace
+  _DEPLOYMENT: "ai-farm-deployment"   # your Deployment name in GKE
+  _CONTAINER: "ai-farm-container"     # container name inside Deployment
 
 options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
-  # 1) Build Docker image
+  # 1️⃣ Build Docker image
   - name: "gcr.io/cloud-builders/docker"
     args:
       [
@@ -24,29 +24,35 @@ steps:
         ".",
       ]
 
-  # 2) Push image to Artifact Registry
+  # 2️⃣ Push image to Artifact Registry
   - name: "gcr.io/cloud-builders/docker"
     args:
-      ["push", "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:$SHORT_SHA"]
+      [
+        "push",
+        "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:$SHORT_SHA",
+      ]
 
-  # 3) Fetch GKE credentials so kubectl can talk to the cluster
+  # 3️⃣ Fetch GKE credentials so kubectl can talk to the cluster
   - name: "gcr.io/cloud-builders/gcloud"
     entrypoint: "bash"
     args:
       - "-c"
       - |
+        echo "🔹 Fetching cluster credentials for ${_CLUSTER} in ${_CLUSTER_LOCATION}"
         gcloud container clusters get-credentials "${_CLUSTER}" \
           --region "${_CLUSTER_LOCATION}" \
           --project "$PROJECT_ID"
 
-  # 4) Rolling update: set the new image on your Deployment
+  # 4️⃣ Rolling update — deploy new image to your GKE app
   - name: "gcr.io/cloud-builders/kubectl"
     args:
       [
-        "set","image",
+        "set",
+        "image",
         "deployment/${_DEPLOYMENT}",
         "${_CONTAINER}=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:$SHORT_SHA",
-        "-n","${_NAMESPACE}"
+        "-n",
+        "${_NAMESPACE}",
       ]
 
 images:
